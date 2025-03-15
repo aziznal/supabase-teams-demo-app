@@ -34,10 +34,127 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      project: {
+        Row: {
+          content: string | null
+          id: string
+        }
+        Insert: {
+          content?: string | null
+          id?: string
+        }
+        Update: {
+          content?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      team: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id?: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
+      }
+      team_projects: {
+        Row: {
+          project_id: string
+          team_id: string
+        }
+        Insert: {
+          project_id: string
+          team_id: string
+        }
+        Update: {
+          project_id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_projects_project_id_project_id_fk"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "project"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_projects_team_id_team_id_fk"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_users: {
+        Row: {
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_users_team_id_team_id_fk"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_users_user_id_users_id_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_profile_info: {
+        Row: {
+          full_name: string
+          id: string
+        }
+        Insert: {
+          full_name: string
+          id: string
+        }
+        Update: {
+          full_name?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_profile_info_id_users_id_fk"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      users_view: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

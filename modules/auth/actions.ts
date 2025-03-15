@@ -2,10 +2,12 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { SignupForm } from "./schemas";
-import { db } from "@/lib/db/drizzle";
 import { userProfileInfo } from "@/lib/db/drizzle/schema/index";
+import { createDrizzleSupabaseClient } from "@/lib/db/drizzle";
 
 export async function createUser(args: SignupForm) {
+  const db = await createDrizzleSupabaseClient();
+
   const supabase = await createClient();
 
   const signupResult = await supabase.auth.signUp({
@@ -20,12 +22,11 @@ export async function createUser(args: SignupForm) {
     );
   }
 
-  // not a breaking change. just return
   if (!signupResult.data.user || !signupResult.data.session) {
     throw new Error("An unknown error occurred while signing up");
   }
 
-  await db()
+  await db.admin
     .insert(userProfileInfo)
     .values({
       id: signupResult.data.user.id,
@@ -37,7 +38,4 @@ export async function createUser(args: SignupForm) {
       },
       target: [userProfileInfo.id],
     });
-
-  // set it and forget it
-  await supabase.auth.setSession(signupResult.data.session);
 }

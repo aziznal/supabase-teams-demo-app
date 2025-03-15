@@ -5,7 +5,9 @@ export const Page: React.FC<{
   children: React.ReactNode;
 }> = (props) => {
   return (
-    <div className={cn("mx-auto container py-12", props.className)}>
+    <div
+      className={cn("container mx-auto px-4 py-12 sm:px-0", props.className)}
+    >
       {props.children}
     </div>
   );

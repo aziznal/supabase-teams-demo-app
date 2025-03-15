@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, relations, sql } from "drizzle-orm";
 import {
   pgPolicy,
   pgTable,
@@ -15,35 +15,53 @@ export const userProfileInfo = pgTable("user_profile_info", {
     .primaryKey()
     .notNull()
     .references(() => authUsers.id),
-  fullName: text().notNull(),
+  fullName: text("full_name").notNull(),
 });
 
-export const usersView = pgView("users_view")
-  .with({
-    securityInvoker: true,
-    securityBarrier: true,
-  })
-  .as((qb) => {
-    const cte = qb.$with("cte").as(
-      qb
-        .select({
-          id: authUsers.id,
-          email: authUsers.email,
-          createdAt: authUsers.createdAt,
-          fullName: sql<string>`${userProfileInfo.fullName}`.as("full_name"),
-        })
-        .from(authUsers)
-        .innerJoin(userProfileInfo, eq(authUsers.id, userProfileInfo.id)),
-    );
+export const userProfileInfoRelations = relations(
+  userProfileInfo,
+  ({ one, many }) => ({
+    authUser: one(authUsers, {
+      fields: [userProfileInfo.id],
+      references: [authUsers.id],
+    }),
 
-    return qb.with(cte).select().from(cte);
-  });
+    teamUsers: many(teamUsers),
+  }),
+);
+
+export const usersView = pgView("users_view").as((qb) => {
+  const cte = qb.$with("cte").as(
+    qb
+      .select({
+        id: authUsers.id,
+        email: authUsers.email,
+        createdAt: authUsers.createdAt,
+
+        // TODO: why is this weirdness necessary?
+        // fullName: sql<string>`${userProfileInfo.fullName}`.as("full_name"),
+        fullName: userProfileInfo.fullName,
+      })
+      .from(authUsers)
+      .innerJoin(userProfileInfo, eq(authUsers.id, userProfileInfo.id))
+
+      // NOTE: must re-apply RLS policy since there's a join in this view
+      .where(eq(userProfileInfo.id, authUid)),
+  );
+
+  return qb.with(cte).select().from(cte);
+});
 
 export const team = pgTable("team", {
   id: uuid().primaryKey().defaultRandom(),
 });
 
-export const team_users = pgTable(
+export const teamRelations = relations(team, ({ many }) => ({
+  teamUsers: many(teamUsers),
+  teamProjects: many(teamProjects),
+}));
+
+export const teamUsers = pgTable(
   "team_users",
   {
     teamId: uuid()
@@ -57,10 +75,56 @@ export const team_users = pgTable(
   (t) => [primaryKey({ columns: [t.teamId, t.userId] })],
 );
 
+export const teamUsersRelations = relations(teamUsers, ({ one }) => ({
+  userProfileInfo: one(userProfileInfo, {
+    fields: [teamUsers.userId],
+    references: [userProfileInfo.id],
+  }),
+
+  team: one(team, {
+    fields: [teamUsers.teamId],
+    references: [team.id],
+  }),
+}));
+
 export const project = pgTable("project", {
   id: uuid().primaryKey().defaultRandom(),
   content: text(),
 });
+
+export const projectRelations = relations(project, ({ many }) => ({
+  teamProjects: many(teamProjects),
+}));
+
+export const teamProjects = pgTable(
+  "team_projects",
+  {
+    teamId: uuid()
+      .notNull()
+      .references(() => team.id),
+
+    projectId: uuid()
+      .notNull()
+      .references(() => project.id),
+  },
+  (t) => [
+    primaryKey({
+      columns: [t.teamId, t.projectId],
+    }),
+  ],
+);
+
+export const teamProjectsRelations = relations(teamProjects, ({ one }) => ({
+  team: one(team, {
+    fields: [teamProjects.teamId],
+    references: [team.id],
+  }),
+
+  project: one(project, {
+    fields: [teamProjects.projectId],
+    references: [project.id],
+  }),
+}));
 
 // POLICIES
 
@@ -75,7 +139,7 @@ export const userProfileInfo_policy1 = pgPolicy(
 ).link(userProfileInfo);
 
 const userIsTeamMember = sql`
-  EXISTS ( SELECT 1 FROM ${team_users} WHERE ${team_users.userId} = ${authUid} AND ${team_users.teamId} = ${team.id} )`;
+  EXISTS ( SELECT 1 FROM ${teamUsers} WHERE ${teamUsers.userId} = ${authUid} AND ${teamUsers.teamId} = ${team.id} )`;
 
 export const team_policy1 = pgPolicy("allow read for members", {
   as: "permissive",
@@ -86,8 +150,5 @@ export const team_policy1 = pgPolicy("allow read for members", {
 
 // TODO: add policy for write access
 //
-// TODO: add team_projects table
-//
 // TODO: add policies for project access
 //
-// TODO: add relations to be able to query with db.query
