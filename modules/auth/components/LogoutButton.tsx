@@ -25,6 +25,7 @@ export const LogoutButton: React.FC<{ className?: string }> = (props) => {
 
   return (
     <Button
+      variant="outline"
       className={cn(props.className)}
       onClick={logout}
       disabled={logoutMutation.isPending || logoutMutation.isSuccess}
