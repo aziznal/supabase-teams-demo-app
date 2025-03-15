@@ -2,6 +2,8 @@ import { Page } from "@/lib/client/components/layout/Page";
 import { createDrizzleSupabaseClient } from "@/lib/db/drizzle";
 import { usersView } from "@/lib/db/drizzle/schema";
 
+export const dynamic = "force-dynamic";
+
 async function fetchUser() {
   "use server";
 
