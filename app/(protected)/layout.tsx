@@ -5,7 +5,7 @@ import { LogoutButton } from "@/modules/auth/components/LogoutButton";
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <header className="container flex justify-end p-4">
+      <header className="container flex justify-end py-4 mx-auto">
         <LogoutButton />
       </header>
 

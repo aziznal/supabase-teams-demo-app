@@ -36,28 +36,34 @@ export type Database = {
     Tables: {
       project: {
         Row: {
-          content: string | null
+          content: string
           id: string
+          name: string
         }
         Insert: {
-          content?: string | null
+          content?: string
           id?: string
+          name?: string
         }
         Update: {
-          content?: string | null
+          content?: string
           id?: string
+          name?: string
         }
         Relationships: []
       }
       team: {
         Row: {
           id: string
+          name: string
         }
         Insert: {
           id?: string
+          name?: string
         }
         Update: {
           id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -80,6 +86,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "project"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_projects_project_id_project_id_fk"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "user_projects_view"
             referencedColumns: ["id"]
           },
           {
@@ -146,6 +159,40 @@ export type Database = {
       }
     }
     Views: {
+      user_projects_view: {
+        Row: {
+          content: string | null
+          id: string | null
+          name: string | null
+          project_name: string | null
+          team_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_users_team_id_team_id_fk"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_teams_view: {
+        Row: {
+          name: string | null
+          projectsCount: number | null
+          team_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_users_team_id_team_id_fk"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "team"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users_view: {
         Row: {
           created_at: string | null

@@ -22,9 +22,9 @@ export const SignupForm: React.FC<{ className?: string }> = (props) => {
   const form = useForm<SignupFormType>({
     resolver: zodResolver(signupFormSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
+      fullName: "Aziz",
+      email: "abodenaal@gmail.com",
+      password: "@PAssword123!",
     },
   });
 

@@ -1,4 +1,4 @@
-import { eq, relations, sql } from "drizzle-orm";
+import { count, eq, relations, sql } from "drizzle-orm";
 import {
   pgPolicy,
   pgTable,
@@ -11,7 +11,7 @@ import {
 import { authUid, authUsers, authenticatedRole } from "drizzle-orm/supabase";
 
 export const userProfileInfo = pgTable("user_profile_info", {
-  id: uuid()
+  id: uuid("id")
     .primaryKey()
     .notNull()
     .references(() => authUsers.id),
@@ -30,30 +30,9 @@ export const userProfileInfoRelations = relations(
   }),
 );
 
-export const usersView = pgView("users_view").as((qb) => {
-  const cte = qb.$with("cte").as(
-    qb
-      .select({
-        id: authUsers.id,
-        email: authUsers.email,
-        createdAt: authUsers.createdAt,
-
-        // TODO: why is this weirdness necessary?
-        // fullName: sql<string>`${userProfileInfo.fullName}`.as("full_name"),
-        fullName: userProfileInfo.fullName,
-      })
-      .from(authUsers)
-      .innerJoin(userProfileInfo, eq(authUsers.id, userProfileInfo.id))
-
-      // NOTE: must re-apply RLS policy since there's a join in this view
-      .where(eq(userProfileInfo.id, authUid)),
-  );
-
-  return qb.with(cte).select().from(cte);
-});
-
 export const team = pgTable("team", {
-  id: uuid().primaryKey().defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().default(""),
 });
 
 export const teamRelations = relations(team, ({ many }) => ({
@@ -64,11 +43,11 @@ export const teamRelations = relations(team, ({ many }) => ({
 export const teamUsers = pgTable(
   "team_users",
   {
-    teamId: uuid()
+    teamId: uuid("team_id")
       .notNull()
       .references(() => team.id),
 
-    userId: uuid()
+    userId: uuid("user_id")
       .notNull()
       .references(() => authUsers.id),
   },
@@ -88,8 +67,9 @@ export const teamUsersRelations = relations(teamUsers, ({ one }) => ({
 }));
 
 export const project = pgTable("project", {
-  id: uuid().primaryKey().defaultRandom(),
-  content: text(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().default(""),
+  content: text("content").notNull().default(""),
 });
 
 export const projectRelations = relations(project, ({ many }) => ({
@@ -99,11 +79,11 @@ export const projectRelations = relations(project, ({ many }) => ({
 export const teamProjects = pgTable(
   "team_projects",
   {
-    teamId: uuid()
+    teamId: uuid("team_id")
       .notNull()
       .references(() => team.id),
 
-    projectId: uuid()
+    projectId: uuid("project_id")
       .notNull()
       .references(() => project.id),
   },
@@ -125,6 +105,77 @@ export const teamProjectsRelations = relations(teamProjects, ({ one }) => ({
     references: [project.id],
   }),
 }));
+
+// VIEWS
+
+export const usersView = pgView("users_view").as((qb) => {
+  const cte = qb.$with("cte").as(
+    qb
+      .select({
+        id: authUsers.id,
+        email: authUsers.email,
+        createdAt: authUsers.createdAt,
+        fullName: sql<string>`${userProfileInfo.fullName}`.as("full_name"),
+      })
+      .from(authUsers)
+      .innerJoin(userProfileInfo, eq(authUsers.id, userProfileInfo.id))
+
+      // NOTE: must re-apply a check like in the RLS policy since there's a join in this view. Source: trust me bro
+      .where(eq(userProfileInfo.id, authUid)),
+  );
+
+  return qb.with(cte).select().from(cte);
+});
+
+export const userTeamsView = pgView("user_teams_view").as((qb) => {
+  const cte = qb.$with("cte").as(
+    qb
+      .select({
+        teamId: teamUsers.teamId,
+        teamName: team.name,
+        projectsCount: count(teamProjects).as(`projectsCount`),
+      })
+      .from(teamUsers)
+      .leftJoin(team, eq(teamUsers.teamId, team.id))
+      .leftJoin(teamProjects, eq(teamProjects.teamId, team.id))
+      .leftJoin(project, eq(project.id, teamProjects.projectId))
+
+      // NOTE: must re-apply a check like in the RLS policy since there's a join in this view. Source: trust me bro
+      .where(eq(teamUsers.userId, authUid))
+      .groupBy(teamUsers.teamId, team.name),
+  );
+
+  return qb.with(cte).select().from(cte);
+});
+
+export const userProjectsView = pgView("user_projects_view").as((qb) => {
+  const cte = qb.$with("cte").as(
+    qb
+      .select({
+        teamId: teamUsers.teamId,
+        teamName: team.name,
+        id: project.id,
+        name: sql<string>`${project.name}`.as('project_name'),
+        content: project.content,
+      })
+      .from(teamUsers)
+      .leftJoin(team, eq(teamUsers.teamId, team.id))
+      .leftJoin(teamProjects, eq(teamProjects.teamId, team.id))
+      .leftJoin(project, eq(project.id, teamProjects.projectId))
+
+      // NOTE: must re-apply a check like in the RLS policy since there's a join in this view. Source: trust me bro
+      .where(eq(teamUsers.userId, authUid))
+      .groupBy(
+        teamUsers.teamId,
+        team.name,
+        project.id,
+        sql`${project.name}`.as('project_name'),
+        project.content,
+      ),
+  );
+
+  return qb.with(cte).select().from(cte);
+});
 
 // POLICIES
 

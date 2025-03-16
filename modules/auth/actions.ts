@@ -2,7 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { SignupForm } from "./schemas";
-import { userProfileInfo } from "@/lib/db/drizzle/schema/index";
+import {
+  team,
+  teamUsers,
+  userProfileInfo,
+} from "@/lib/db/drizzle/schema/index";
 import { createDrizzleSupabaseClient } from "@/lib/db/drizzle";
 
 export async function createUser(args: SignupForm) {
@@ -22,20 +26,37 @@ export async function createUser(args: SignupForm) {
     );
   }
 
-  if (!signupResult.data.user || !signupResult.data.session) {
-    throw new Error("An unknown error occurred while signing up");
-  }
+  await db.admin.transaction(async (tx) => {
+    if (!signupResult.data.user || !signupResult.data.session) {
+      throw new Error("An unknown error occurred while signing up");
+    }
 
-  await db.admin
-    .insert(userProfileInfo)
-    .values({
-      id: signupResult.data.user.id,
-      fullName: args.fullName,
-    })
-    .onConflictDoUpdate({
-      set: {
+    await tx
+      .insert(userProfileInfo)
+      .values({
+        id: signupResult.data.user.id,
         fullName: args.fullName,
-      },
-      target: [userProfileInfo.id],
+      })
+      .onConflictDoUpdate({
+        set: {
+          fullName: args.fullName,
+        },
+        target: [userProfileInfo.id],
+      });
+
+    // create the user's initial team
+    const teamCreationResult = await tx
+      .insert(team)
+      .values({
+        name: `${args.fullName}'s Team`,
+      })
+      .returning({
+        teamId: team.id,
+      });
+
+    await tx.insert(teamUsers).values({
+      teamId: teamCreationResult[0].teamId,
+      userId: signupResult.data.user.id,
     });
+  });
 }
