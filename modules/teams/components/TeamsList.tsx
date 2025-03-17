@@ -21,7 +21,7 @@ export const TeamsList: React.FC<{ className?: string }> = (props) => {
           {teamsQuery.data.map((team) => (
             <div
               key={team.teamId}
-              className="flex flex-col gap-2 rounded-lg border p-4"
+              className="flex flex-col gap-2 rounded-lg border border-violet-500 p-4"
             >
               <div>{team.teamName}</div>
               <div>{team.projectsCount} projects</div>
