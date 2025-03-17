@@ -1,13 +1,13 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { SignupForm } from "./schemas";
 import {
   team,
   teamUsers,
   userProfileInfo,
 } from "@/lib/db/drizzle/schema/index";
 import { createDrizzleSupabaseClient } from "@/lib/db/drizzle";
+import { SignupForm } from "../schemas";
 
 export async function createUser(args: SignupForm) {
   const db = await createDrizzleSupabaseClient();

@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useMutation } from "@tanstack/react-query";
 import { LoginForm } from "./schemas";
-import { createUser } from "./actions";
+import { createUser } from "./actions/create-user";
 
 export const useLoginMutation = (options: {
   onSuccess: () => void;
