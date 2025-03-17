@@ -22,8 +22,8 @@ export const LoginForm: React.FC<{ className?: string }> = (props) => {
   const form = useForm<LoginFormType>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "abodenaal@gmail.com",
+      password: "@PAssword123!",
     },
   });
 
