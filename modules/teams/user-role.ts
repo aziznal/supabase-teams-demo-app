@@ -4,4 +4,4 @@ export enum UserTeamRole {
   owner = "owner",
 }
 
-export const userTeamRoles = Object.keys(UserTeamRole) as [UserTeamRole];
+export const userTeamRolesList = Object.keys(UserTeamRole) as [UserTeamRole];

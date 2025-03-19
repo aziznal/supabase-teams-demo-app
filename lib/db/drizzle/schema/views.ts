@@ -28,6 +28,7 @@ export const userProjectsView = pgView("user_projects_view").as((qb) => {
       .select({
         teamId: teamUsers.teamId,
         teamName: team.name,
+        teamRole: teamUsers.userRole,
         id: project.id,
         name: sql<string>`${project.name}`.as("project_name"),
         content: project.content,
@@ -41,9 +42,10 @@ export const userProjectsView = pgView("user_projects_view").as((qb) => {
       .where(eq(teamUsers.userId, authUid))
       .groupBy(
         teamUsers.teamId,
+        teamUsers.userRole,
         team.name,
         project.id,
-        sql`${project.name}`.as("project_name"),
+        project.name,
         project.content,
       ),
   );
@@ -57,6 +59,7 @@ export const userTeamsView = pgView("user_teams_view").as((qb) => {
       .select({
         teamId: teamUsers.teamId,
         teamName: team.name,
+        teamRole: teamUsers.userRole,
         projectsCount: count(teamProjects).as(`projectsCount`),
       })
       .from(teamUsers)
@@ -66,7 +69,7 @@ export const userTeamsView = pgView("user_teams_view").as((qb) => {
 
       // NOTE: must re-apply a check like in the RLS policy since there's a join in this view. Source: trust me bro
       .where(eq(teamUsers.userId, authUid))
-      .groupBy(teamUsers.teamId, team.name),
+      .groupBy(teamUsers.teamId, team.name, teamUsers.userRole),
   );
 
   return qb.with(cte).select().from(cte);

@@ -1,7 +1,6 @@
-import { sql, eq, relations } from "drizzle-orm";
-import { pgTable, pgView, primaryKey, uuid } from "drizzle-orm/pg-core";
-import { authUid } from "drizzle-orm/supabase";
-import { team, teamUsers, project } from ".";
+import { relations } from "drizzle-orm";
+import { pgTable, primaryKey, uuid } from "drizzle-orm/pg-core";
+import { team, project } from ".";
 
 export const teamProjects = pgTable(
   "team_projects",
@@ -32,4 +31,3 @@ export const teamProjectsRelations = relations(teamProjects, ({ one }) => ({
     references: [project.id],
   }),
 }));
-

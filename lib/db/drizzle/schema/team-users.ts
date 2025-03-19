@@ -4,9 +4,9 @@ import { pgEnum, pgTable } from "drizzle-orm/pg-core";
 import { authUsers } from "drizzle-orm/supabase";
 import { team } from "./team";
 import { user } from "./user";
-import { userTeamRoles } from "@/modules/teams/user-role";
+import { userTeamRolesList } from "@/modules/teams/user-role";
 
-export const pgUserTeamRole = pgEnum("user_team_role", userTeamRoles);
+export const pgUserTeamRole = pgEnum("user_team_role", userTeamRolesList);
 
 export const teamUsers = pgTable(
   "team_users",
@@ -19,7 +19,7 @@ export const teamUsers = pgTable(
       .notNull()
       .references(() => authUsers.id),
 
-    userRole: pgUserTeamRole("team_users_role").notNull(),
+    userRole: pgUserTeamRole("team_users_user_role").notNull(),
   },
   (t) => [primaryKey({ columns: [t.teamId, t.userId] })],
 );

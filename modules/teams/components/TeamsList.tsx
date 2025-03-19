@@ -23,7 +23,10 @@ export const TeamsList: React.FC<{ className?: string }> = (props) => {
               key={team.teamId}
               className="flex flex-col gap-2 rounded-lg border border-violet-500 p-4"
             >
-              <div>{team.teamName}</div>
+              <div className="flex items-center gap-1">
+                {team.teamName}
+                <span className="text-muted-foreground">({team.teamRole})</span>
+              </div>
               <div>{team.projectsCount} projects</div>
             </div>
           ))}

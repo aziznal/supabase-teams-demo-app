@@ -24,7 +24,10 @@ export const ProjectsList: React.FC<{ className?: string }> = (props) => {
               className="flex w-[300px] flex-col gap-2 rounded-lg border border-lime-500 p-4"
             >
               <div className="text-muted-foreground text-sm">
-                team: {project.teamName}
+                team: {project.teamName}{" "}
+                <span className="text-muted-foreground">
+                  ({project.teamRole})
+                </span>
               </div>
 
               <div className="text-lg font-bold">{project.name}</div>

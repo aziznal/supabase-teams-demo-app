@@ -106,19 +106,19 @@ export type Database = {
       }
       team_users: {
         Row: {
-          team_users_role: Database["public"]["Enums"]["user_team_role"]
           team_users_team_id: string
           team_users_user_id: string
+          team_users_user_role: Database["public"]["Enums"]["user_team_role"]
         }
         Insert: {
-          team_users_role: Database["public"]["Enums"]["user_team_role"]
           team_users_team_id: string
           team_users_user_id: string
+          team_users_user_role: Database["public"]["Enums"]["user_team_role"]
         }
         Update: {
-          team_users_role?: Database["public"]["Enums"]["user_team_role"]
           team_users_team_id?: string
           team_users_user_id?: string
+          team_users_user_role?: Database["public"]["Enums"]["user_team_role"]
         }
         Relationships: [
           {
@@ -169,6 +169,9 @@ export type Database = {
           project_name: string | null
           team_name: string | null
           team_users_team_id: string | null
+          team_users_user_role:
+            | Database["public"]["Enums"]["user_team_role"]
+            | null
         }
         Relationships: [
           {
@@ -185,6 +188,9 @@ export type Database = {
           projectsCount: number | null
           team_name: string | null
           team_users_team_id: string | null
+          team_users_user_role:
+            | Database["public"]["Enums"]["user_team_role"]
+            | null
         }
         Relationships: [
           {
