@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useMutation } from "@tanstack/react-query";
 import { LoginForm } from "./schemas";
 import { createUser } from "./actions/create-user";
+import { queryClient } from "@/lib/client/tanstack-query-client";
 
 export const useLoginMutation = (options: {
   onSuccess: () => void;
@@ -42,6 +43,7 @@ export const useLogoutMutation = (options: {
     mutationFn: async () => {
       const supabase = createClient();
       const result = await supabase.auth.signOut();
+      queryClient.clear();
 
       if (result.error)
         throw new Error("Error while signing out.", result.error);

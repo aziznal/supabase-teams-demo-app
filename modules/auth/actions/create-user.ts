@@ -1,13 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import {
-  team,
-  teamUsers,
-  userProfileInfo,
-} from "@/lib/db/drizzle/schema/index";
+import { team, teamUsers, user } from "@/lib/db/drizzle/schema/index";
 import { createDrizzleSupabaseClient } from "@/lib/db/drizzle";
 import { SignupForm } from "../schemas";
+import { UserTeamRole } from "@/modules/teams/user-role";
 
 export async function createUser(args: SignupForm) {
   const db = await createDrizzleSupabaseClient();
@@ -32,7 +29,7 @@ export async function createUser(args: SignupForm) {
     }
 
     await tx
-      .insert(userProfileInfo)
+      .insert(user)
       .values({
         id: signupResult.data.user.id,
         fullName: args.fullName,
@@ -41,7 +38,7 @@ export async function createUser(args: SignupForm) {
         set: {
           fullName: args.fullName,
         },
-        target: [userProfileInfo.id],
+        target: [user.id],
       });
 
     // create the user's initial team
@@ -57,6 +54,7 @@ export async function createUser(args: SignupForm) {
     await tx.insert(teamUsers).values({
       teamId: teamCreationResult[0].teamId,
       userId: signupResult.data.user.id,
+      userRole: UserTeamRole.owner,
     });
   });
 }

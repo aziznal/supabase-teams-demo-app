@@ -36,121 +36,124 @@ export type Database = {
     Tables: {
       project: {
         Row: {
-          content: string
-          id: string
-          name: string
+          project_content: string
+          project_id: string
+          project_name: string
         }
         Insert: {
-          content?: string
-          id?: string
-          name?: string
+          project_content?: string
+          project_id?: string
+          project_name?: string
         }
         Update: {
-          content?: string
-          id?: string
-          name?: string
+          project_content?: string
+          project_id?: string
+          project_name?: string
         }
         Relationships: []
       }
       team: {
         Row: {
-          id: string
-          name: string
+          team_id: string
+          team_name: string
         }
         Insert: {
-          id?: string
-          name?: string
+          team_id?: string
+          team_name?: string
         }
         Update: {
-          id?: string
-          name?: string
+          team_id?: string
+          team_name?: string
         }
         Relationships: []
       }
       team_projects: {
         Row: {
-          project_id: string
-          team_id: string
+          team_projects_project_id: string
+          team_projects_team_id: string
         }
         Insert: {
-          project_id: string
-          team_id: string
+          team_projects_project_id: string
+          team_projects_team_id: string
         }
         Update: {
-          project_id?: string
-          team_id?: string
+          team_projects_project_id?: string
+          team_projects_team_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "team_projects_project_id_project_id_fk"
-            columns: ["project_id"]
+            foreignKeyName: "team_projects_team_projects_project_id_project_project_id_fk"
+            columns: ["team_projects_project_id"]
             isOneToOne: false
             referencedRelation: "project"
-            referencedColumns: ["id"]
+            referencedColumns: ["project_id"]
           },
           {
-            foreignKeyName: "team_projects_project_id_project_id_fk"
-            columns: ["project_id"]
+            foreignKeyName: "team_projects_team_projects_project_id_project_project_id_fk"
+            columns: ["team_projects_project_id"]
             isOneToOne: false
             referencedRelation: "user_projects_view"
-            referencedColumns: ["id"]
+            referencedColumns: ["project_id"]
           },
           {
-            foreignKeyName: "team_projects_team_id_team_id_fk"
-            columns: ["team_id"]
+            foreignKeyName: "team_projects_team_projects_team_id_team_team_id_fk"
+            columns: ["team_projects_team_id"]
             isOneToOne: false
             referencedRelation: "team"
-            referencedColumns: ["id"]
+            referencedColumns: ["team_id"]
           },
         ]
       }
       team_users: {
         Row: {
-          team_id: string
-          user_id: string
+          team_users_role: Database["public"]["Enums"]["user_team_role"]
+          team_users_team_id: string
+          team_users_user_id: string
         }
         Insert: {
-          team_id: string
-          user_id: string
+          team_users_role: Database["public"]["Enums"]["user_team_role"]
+          team_users_team_id: string
+          team_users_user_id: string
         }
         Update: {
-          team_id?: string
-          user_id?: string
+          team_users_role?: Database["public"]["Enums"]["user_team_role"]
+          team_users_team_id?: string
+          team_users_user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "team_users_team_id_team_id_fk"
-            columns: ["team_id"]
+            foreignKeyName: "team_users_team_users_team_id_team_team_id_fk"
+            columns: ["team_users_team_id"]
             isOneToOne: false
             referencedRelation: "team"
-            referencedColumns: ["id"]
+            referencedColumns: ["team_id"]
           },
           {
-            foreignKeyName: "team_users_user_id_users_id_fk"
-            columns: ["user_id"]
+            foreignKeyName: "team_users_team_users_user_id_users_id_fk"
+            columns: ["team_users_user_id"]
             isOneToOne: false
             referencedRelation: "users_view"
             referencedColumns: ["id"]
           },
         ]
       }
-      user_profile_info: {
+      user: {
         Row: {
-          full_name: string
-          id: string
+          user_full_name: string
+          user_id: string
         }
         Insert: {
-          full_name: string
-          id: string
+          user_full_name: string
+          user_id: string
         }
         Update: {
-          full_name?: string
-          id?: string
+          user_full_name?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "user_profile_info_id_users_id_fk"
-            columns: ["id"]
+            foreignKeyName: "user_user_id_users_id_fk"
+            columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "users_view"
             referencedColumns: ["id"]
@@ -161,35 +164,35 @@ export type Database = {
     Views: {
       user_projects_view: {
         Row: {
-          content: string | null
-          id: string | null
-          name: string | null
+          project_content: string | null
+          project_id: string | null
           project_name: string | null
-          team_id: string | null
+          team_name: string | null
+          team_users_team_id: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "team_users_team_id_team_id_fk"
-            columns: ["team_id"]
+            foreignKeyName: "team_users_team_users_team_id_team_team_id_fk"
+            columns: ["team_users_team_id"]
             isOneToOne: false
             referencedRelation: "team"
-            referencedColumns: ["id"]
+            referencedColumns: ["team_id"]
           },
         ]
       }
       user_teams_view: {
         Row: {
-          name: string | null
           projectsCount: number | null
-          team_id: string | null
+          team_name: string | null
+          team_users_team_id: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "team_users_team_id_team_id_fk"
-            columns: ["team_id"]
+            foreignKeyName: "team_users_team_users_team_id_team_team_id_fk"
+            columns: ["team_users_team_id"]
             isOneToOne: false
             referencedRelation: "team"
-            referencedColumns: ["id"]
+            referencedColumns: ["team_id"]
           },
         ]
       }
@@ -207,7 +210,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_team_role: "member" | "admin" | "owner"
     }
     CompositeTypes: {
       [_ in never]: never
